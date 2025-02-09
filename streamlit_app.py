@@ -3,6 +3,13 @@ from openai import OpenAI
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
+api_key = st.secrets.get("OPENAI_API_KEY")
+
+if api_key:
+    st.success("✅ API Key đã được nhận diện thành công!")
+else:
+    st.error("❌ Lỗi: Không tìm thấy API Key trong secrets.")
+
 def rfile(name_file):
     with open(name_file, "r", encoding="utf-8") as file:
         return file.read()
