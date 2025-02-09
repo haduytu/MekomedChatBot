@@ -3,6 +3,8 @@ from openai import OpenAI
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
+st.write("🔍 Debugging Secrets:", st.secrets.to_dict())  # Hiển thị tất cả giá trị trong secrets
+
 api_key = st.secrets.get("OPENAI_API_KEY")
 
 if api_key:
