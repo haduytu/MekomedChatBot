@@ -3,6 +3,7 @@ from openai import OpenAI
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import json
+import googleapiclient.errors
 
 SCOPES = ["https://www.googleapis.com/auth/documents.readonly"]
 
@@ -26,50 +27,24 @@ else:
     st.error("❌ Lỗi: Không tìm thấy 'gcp_service_account' trong Streamlit Secrets!")
     st.stop()
 
-st.write("🔍 Debugging Secrets:", st.secrets.to_dict())
-
-api_key = st.secrets.get("OPENAI_API_KEY")
-
-if api_key:
-    st.success("✅ API Key đã được nhận diện thành công!")
-else:
-    st.error("❌ Lỗi: Không tìm thấy API Key trong secrets.")
-
-def rfile(name_file):
-    with open(name_file, "r", encoding="utf-8") as file:
-        return file.read()
-
 def get_google_docs_content(document_ids):
-    if "gcp_service_account" in st.secrets:
-        service_account_info = {
-            "type": st.secrets["gcp_service_account"]["type"],
-            "project_id": st.secrets["gcp_service_account"]["project_id"],
-            "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
-            "private_key": st.secrets["gcp_service_account"]["private_key"],
-            "client_email": st.secrets["gcp_service_account"]["client_email"],
-            "client_id": st.secrets["gcp_service_account"]["client_id"],
-            "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
-            "token_uri": st.secrets["gcp_service_account"]["token_uri"],
-            "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
-            "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"],
-            "universe_domain": st.secrets["gcp_service_account"]["universe_domain"]
-        }
-        creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
-    else:
-        st.error("❌ Lỗi: Không tìm thấy 'gcp_service_account' trong Streamlit Secrets!")
-        st.stop()
-    
     service = build("docs", "v1", credentials=creds)
     all_text = []
     for document_id in document_ids:
-        doc = service.documents().get(documentId=document_id).execute()
-        text = []
-        for content in doc["body"]["content"]:
-            if "paragraph" in content:
-                for element in content["paragraph"]["elements"]:
-                    if "textRun" in element:
-                        text.append(element["textRun"]["content"])
-        all_text.append("\n".join(text))
+        try:
+            st.write(f"📄 Đang lấy nội dung từ Google Docs ID: {document_id}")
+            doc = service.documents().get(documentId=document_id).execute()
+            st.write(f"✅ Lấy nội dung thành công từ {document_id}")
+            
+            text = []
+            for content in doc["body"]["content"]:
+                if "paragraph" in content:
+                    for element in content["paragraph"]["elements"]:
+                        if "textRun" in element:
+                            text.append(element["textRun"]["content"])
+            all_text.append("\n".join(text))
+        except googleapiclient.errors.HttpError as e:
+            st.error(f"❌ Lỗi khi truy xuất Google Docs ID {document_id}: {str(e)}")
     return "\n\n".join(all_text)
 
 # Hiển thị logo ở trên cùng, căn giữa
@@ -81,7 +56,7 @@ except Exception:
     pass
 
 # Tùy chỉnh nội dung tiêu đề
-title_content = rfile("00.xinchao.txt")
+title_content = "Ứng dụng ChatMekomed"
 st.markdown(f"""
     <h1 style="text-align: center; font-size: 24px;">{title_content}</h1>
     """, unsafe_allow_html=True)
@@ -110,7 +85,7 @@ INITIAL_SYSTEM_MESSAGE = {
 
 INITIAL_ASSISTANT_MESSAGE = {
     "role": "assistant",
-    "content": rfile("02.assistant.txt"),
+    "content": "Xin chào! Tôi có thể giúp gì cho bạn hôm nay?",
 }
 
 if "messages" not in st.session_state:
@@ -127,7 +102,7 @@ if prompt := st.chat_input("Bạn nhập nội dung cần trao đổi ở đây 
         st.markdown(prompt)
     
     stream = client.chat.completions.create(
-        model=rfile("module_chatgpt.txt").strip(),
+        model="gpt-4",
         messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
         stream=True,
     )
