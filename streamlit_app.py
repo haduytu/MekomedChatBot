@@ -3,6 +3,16 @@ from openai import OpenAI
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
+import json
+
+if "gcp_service_account" in st.secrets:
+    service_account_info = json.loads(st.secrets["gcp_service_account"])
+    creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+else:
+    st.error("❌ Lỗi: Không tìm thấy 'gcp_service_account' trong Streamlit Secrets!")
+    st.stop()
+
+
 st.write("🔍 Debugging Secrets:", st.secrets.to_dict())  # Hiển thị tất cả giá trị trong secrets
 
 api_key = st.secrets.get("OPENAI_API_KEY")
