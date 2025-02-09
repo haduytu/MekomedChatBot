@@ -16,15 +16,20 @@ def rfile(name_file):
 
 def get_google_docs_content(document_ids):
     SCOPES = ["https://www.googleapis.com/auth/documents.readonly"]
-    SERVICE_ACCOUNT_FILE = "credentials.json"
     
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
-    )
-    
+    # Sử dụng credentials từ file hoặc từ secrets
+    if st.secrets.get("gcp_service_account") is None:
+        SERVICE_ACCOUNT_FILE = "credentials.json"
+        creds = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+    else:
+        service_account_info = json.loads(st.secrets["gcp_service_account"])
+        creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+
     service = build("docs", "v1", credentials=creds)
     all_text = []
-    
+
     for document_id in document_ids:
         doc = service.documents().get(documentId=document_id).execute()
         
@@ -37,6 +42,7 @@ def get_google_docs_content(document_ids):
         all_text.append("\n".join(text))
     
     return "\n\n".join(all_text)
+
 
 # Hiển thị logo ở trên cùng, căn giữa
 try:
