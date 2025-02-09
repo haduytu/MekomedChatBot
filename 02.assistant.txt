@@ -1,0 +1,1 @@
+ChatMekomed - Trợ lý ảo của hệ thống các phòng khám đa khoa Mekomed xin chào. Nếu được, vui lòng cho biết tên, tuổi và giới tính để tiện việc xưng hô cũng như tư vấn sức khỏe. Bạn có thể bỏ qua việc cung cấp thông tin nếu cảm thấy phiền.
