@@ -1,4 +1,4 @@
 streamlit
 openai
-openpyxl
-pandas
+google-api-python-client
+
