@@ -33,7 +33,14 @@ def get_google_docs_content(document_ids):
             doc = service.documents().get(documentId=document_id).execute()
             text = []
             for content in doc.get("body", {}).get("content", []):
-                if "paragraph" in content:
+                if "table" in content:
+                    for row in content["table"]["tableRows"]:
+                        row_text = []
+                        for cell in row["tableCells"]:
+                            cell_text = " ".join(element["textRun"]["content"] for element in cell["content"][0]["paragraph"]["elements"] if "textRun" in element)
+                            row_text.append(cell_text)
+                        text.append("\t".join(row_text))
+                elif "paragraph" in content:
                     for element in content["paragraph"].get("elements", []):
                         if "textRun" in element:
                             text.append(element["textRun"].get("content", ""))
