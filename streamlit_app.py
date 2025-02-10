@@ -71,8 +71,8 @@ client = OpenAI(api_key=openai_api_key)
 document_ids = [
     "1YUxUaW1zvM1HW_vEo4F8zaf7j2qyi7FfprwDzYWTW5M",
     "1l-nxSrYTs3lUuRaIQgZs8Gp0Twx47sbAKwZSfDFi7mY",
-    "11BycSSW0otYOJcqRmKZEnFTmJfT3q7oj",
-    "1p_6NrUADX8uMnrTce3RyCkrU5LPYS8ca"
+    "1SLl5XpnQIFvjtqljwbh1ZO4Ray7mm8TTksNHJX1iqDI",
+    "1IEJ5y3lv7O-NqVo9P_zE0yW611Tns9cpwJZ-g3abLm8"
 ]
 training_content = get_google_docs_content(document_ids)
 
