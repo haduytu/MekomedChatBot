@@ -31,7 +31,6 @@ def get_google_docs_content(document_ids):
     for document_id in document_ids:
         try:
             doc = service.documents().get(documentId=document_id).execute()
-            
             text = []
             for content in doc.get("body", {}).get("content", []):
                 if "paragraph" in content:
@@ -72,10 +71,17 @@ document_ids = [
 ]
 training_content = get_google_docs_content(document_ids)
 
+# Kiểm tra nội dung training
+st.text_area("📄 Nội dung training từ Google Docs:", training_content, height=300)
+
 INITIAL_SYSTEM_MESSAGE = {
     "role": "system",
     "content": f"""
+    Bạn là một chatbot tư vấn y tế của Mekomed. Dưới đây là thông tin chi tiết từ tài liệu hướng dẫn:
+
     {training_content}
+
+    📌 Nếu người dùng hỏi về dịch vụ, bảng giá hoặc các gói khám sức khỏe, hãy sử dụng thông tin từ trên để trả lời một cách chính xác nhất.
     """,
 }
 
@@ -97,9 +103,10 @@ if prompt := st.chat_input("Bạn nhập nội dung cần trao đổi ở đây 
     with st.chat_message("user"):
         st.markdown(prompt)
     
+    messages_with_training = [INITIAL_SYSTEM_MESSAGE] + st.session_state.messages
     stream = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+        messages=[{"role": m["role"], "content": m["content"]} for m in messages_with_training],
         stream=True,
     )
     
