@@ -22,9 +22,7 @@ if "gcp_service_account" in st.secrets:
         "universe_domain": st.secrets["gcp_service_account"]["universe_domain"]
     }
     creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
-    st.success("✅ Credentials đã được load thành công từ secrets!")
 else:
-    st.error("❌ Lỗi: Không tìm thấy 'gcp_service_account' trong Streamlit Secrets!")
     st.stop()
 
 def get_google_docs_content(document_ids):
@@ -32,19 +30,17 @@ def get_google_docs_content(document_ids):
     all_text = []
     for document_id in document_ids:
         try:
-            st.write(f"📄 Đang lấy nội dung từ Google Docs ID: {document_id}")
             doc = service.documents().get(documentId=document_id).execute()
-            st.write(f"✅ Lấy nội dung thành công từ {document_id}")
             
             text = []
-            for content in doc["body"]["content"]:
+            for content in doc.get("body", {}).get("content", []):
                 if "paragraph" in content:
-                    for element in content["paragraph"]["elements"]:
+                    for element in content["paragraph"].get("elements", []):
                         if "textRun" in element:
-                            text.append(element["textRun"]["content"])
+                            text.append(element["textRun"].get("content", ""))
             all_text.append("\n".join(text))
-        except googleapiclient.errors.HttpError as e:
-            st.error(f"❌ Lỗi khi truy xuất Google Docs ID {document_id}: {str(e)}")
+        except googleapiclient.errors.HttpError:
+            pass
     return "\n\n".join(all_text)
 
 # Hiển thị logo ở trên cùng, căn giữa
@@ -71,8 +67,8 @@ client = OpenAI(api_key=openai_api_key)
 document_ids = [
     "1YUxUaW1zvM1HW_vEo4F8zaf7j2qyi7FfprwDzYWTW5M",
     "1l-nxSrYTs3lUuRaIQgZs8Gp0Twx47sbAKwZSfDFi7mY",
-    "1SLl5XpnQIFvjtqljwbh1ZO4Ray7mm8TTksNHJX1iqDI",
-    "1IEJ5y3lv7O-NqVo9P_zE0yW611Tns9cpwJZ-g3abLm8"
+    "11BycSSW0otYOJcqRmKZEnFTmJfT3q7oj",
+    "1p_6NrUADX8uMnrTce3RyCkrU5LPYS8ca"
 ]
 training_content = get_google_docs_content(document_ids)
 
